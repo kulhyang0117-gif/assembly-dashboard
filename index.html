@@ -1094,17 +1094,18 @@
     });
     btn.disabled = false; btn.textContent = '회원가입';
 
-    if (error && !error.message.includes('already')) {
+    if (error && !error.message.toLowerCase().includes('already')) {
       errEl.textContent = error.message; errEl.classList.add('show'); return;
     }
 
     let userId = data?.user?.id;
 
-    // 이미 가입된 이메일이면 기존 계정으로 로그인해서 ID 확보
-    if (error && error.message.includes('already')) {
+    // 이미 가입된 이메일: 에러로 오거나 user가 null인 경우(Supabase 이메일 열거 방지)
+    const isAlreadyRegistered = (error && error.message.toLowerCase().includes('already')) || (!error && !userId);
+    if (isAlreadyRegistered) {
       const { data: signInData, error: signInErr } = await sb.auth.signInWithPassword({ email, password: pw });
       if (signInErr) {
-        errEl.textContent = '이미 다른 서비스에 가입된 이메일입니다. 해당 서비스의 비밀번호를 입력해주세요.';
+        errEl.textContent = '이미 다른 서비스에 가입된 이메일입니다. 해당 서비스 비밀번호를 입력해주세요.';
         errEl.classList.add('show'); return;
       }
       userId = signInData.user.id;
@@ -1121,10 +1122,15 @@
         sucEl.classList.add('show');
         setTimeout(() => switchTab('login'), 4000); return;
       }
-      await sb.from('profiles').upsert({ id: userId, email, name, status: 'pending', source: 'dashboard' });
+      const { error: upsertErr } = await sb.from('profiles').upsert({ id: userId, email, name, status: 'pending', source: 'dashboard' });
+      if (upsertErr) {
+        await sb.auth.signOut();
+        errEl.textContent = '신청 처리 중 오류가 발생했습니다: ' + upsertErr.message;
+        errEl.classList.add('show'); return;
+      }
     }
 
-    if (data?.session || userId) await sb.auth.signOut();
+    await sb.auth.signOut();
     sucEl.textContent = '접근 신청이 완료되었습니다. 관리자 승인 후 로그인 가능합니다.';
     sucEl.classList.add('show');
     setTimeout(() => switchTab('login'), 4000);
