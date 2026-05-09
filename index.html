@@ -616,6 +616,7 @@
     .action-btn.approve   { background: #dcfce7; color: #15803d; }
     .action-btn.reject    { background: #fee2e2; color: #dc2626; }
     .action-btn.reset-pw  { background: #eff6ff; color: #2563eb; }
+    .action-btn.delete    { background: #fef2f2; color: #dc2626; }
 
     /* ── 비밀번호 재설정 모달 ── */
     .modal-backdrop {
@@ -1175,18 +1176,27 @@
         ? `<button class="action-btn reject" onclick="setMemberStatus('${m.id}','rejected')">거절</button>` : '';
       const resetBtn = m.status === 'approved'
         ? `<button class="action-btn reset-pw" onclick="sendPasswordReset('${m.email}')">비밀번호 초기화</button>` : '';
+      const deleteBtn = `<button class="action-btn delete" onclick="deleteMember('${m.id}', '${m.name}')">삭제</button>`;
       return `<tr>
         <td>${m.name}</td>
         <td>${m.email}</td>
         <td>${date}</td>
         <td>${badge}</td>
-        <td>${approve}${reject}${resetBtn}</td>
+        <td>${approve}${reject}${resetBtn}${deleteBtn}</td>
       </tr>`;
     }).join('');
   }
 
   async function setMemberStatus(id, status) {
     await sb.from('profiles').update({ status }).eq('id', id);
+    loadMembers();
+  }
+
+  async function deleteMember(id, name) {
+    if (!confirm(`'${name}' 회원을 삭제하시겠습니까?`)) return;
+    const { error } = await sb.from('profiles').delete().eq('id', id).eq('source', 'dashboard');
+    if (error) { showToast('삭제 실패: ' + error.message); return; }
+    showToast(`'${name}' 회원이 삭제되었습니다.`);
     loadMembers();
   }
 
