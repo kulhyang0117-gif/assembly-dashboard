@@ -246,82 +246,183 @@
 
     /* ── 홈 패널 ── */
     .home-panel {
-      background: #f0f2f5;
+      background: #eef1f6;
       overflow-y: auto;
-      padding: 36px 40px;
+      display: flex !important;
+      flex-direction: column;
     }
 
-    .home-header { margin-bottom: 32px; }
-    .home-header h2 { font-size: 24px; font-weight: 800; color: #1e293b; }
-    .home-header p  { font-size: 14px; color: #64748b; margin-top: 6px; }
+    .home-hero {
+      background: linear-gradient(135deg, #1a2236 0%, #1e3a5f 60%, #1d4ed8 100%);
+      padding: 40px 44px 48px;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .home-hero::before {
+      content: '';
+      position: absolute;
+      right: -60px; top: -60px;
+      width: 320px; height: 320px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 50%;
+    }
+
+    .home-hero::after {
+      content: '';
+      position: absolute;
+      right: 80px; bottom: -80px;
+      width: 200px; height: 200px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 50%;
+    }
+
+    .home-hero-tag {
+      display: inline-block;
+      background: rgba(96,165,250,0.2);
+      color: #93c5fd;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 99px;
+      margin-bottom: 14px;
+      border: 1px solid rgba(96,165,250,0.3);
+    }
+
+    .home-hero h2 {
+      font-size: 28px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.25;
+      margin-bottom: 10px;
+    }
+
+    .home-hero p {
+      font-size: 14px;
+      color: #94a3b8;
+      line-height: 1.6;
+    }
+
+    .home-body {
+      padding: 32px 44px 40px;
+      flex: 1;
+    }
+
+    .home-section-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 16px;
+    }
 
     .home-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 18px;
     }
 
     .home-card {
       background: #fff;
-      border-radius: 16px;
-      padding: 28px 24px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.07);
-      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
       cursor: pointer;
-      transition: transform 0.18s, box-shadow 0.18s;
+      transition: transform 0.2s, box-shadow 0.2s;
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      border: 1px solid rgba(0,0,0,0.05);
     }
 
     .home-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 28px rgba(0,0,0,0.12);
+      transform: translateY(-4px);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.13);
     }
 
-    .home-card.wip-card { opacity: 0.65; cursor: default; }
-    .home-card.wip-card:hover { transform: none; box-shadow: 0 2px 10px rgba(0,0,0,0.07); }
+    .home-card.wip-card {
+      opacity: 0.55;
+      cursor: default;
+      filter: grayscale(0.3);
+    }
+    .home-card.wip-card:hover { transform: none; box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
 
-    .home-card .hc-icon {
-      width: 52px;
-      height: 52px;
-      border-radius: 14px;
+    .hc-top {
+      padding: 24px 24px 18px;
+      position: relative;
       display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 26px;
-    }
-
-    .home-card .hc-title {
-      font-size: 15px;
-      font-weight: 700;
-      color: #1e293b;
-    }
-
-    .home-card .hc-desc {
-      font-size: 12px;
-      color: #94a3b8;
-      line-height: 1.5;
-    }
-
-    .home-card .hc-footer {
-      margin-top: auto;
-      display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: space-between;
     }
 
-    .home-card .hc-link {
-      font-size: 11px;
-      color: #3b82f6;
-      font-weight: 600;
+    .hc-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
     }
 
-    .home-card.wip-card .hc-link { color: #94a3b8; }
+    .hc-badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 99px;
+      background: #f1f5f9;
+      color: #94a3b8;
+      border: 1px solid #e2e8f0;
+    }
 
-    .hc-arrow { font-size: 16px; color: #cbd5e1; }
-    .home-card:hover .hc-arrow { color: #3b82f6; }
-    .home-card.wip-card:hover .hc-arrow { color: #cbd5e1; }
+    .hc-body {
+      padding: 0 24px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .hc-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: #1e293b;
+      line-height: 1.3;
+    }
+
+    .hc-desc {
+      font-size: 12px;
+      color: #94a3b8;
+      line-height: 1.6;
+    }
+
+    .hc-btn {
+      margin-top: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 8px 16px;
+      border-radius: 99px;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.18s;
+      align-self: flex-start;
+      color: #fff;
+    }
+    .hc-btn:hover { opacity: 0.85; }
+    .hc-btn .btn-arrow { font-size: 14px; transition: transform 0.18s; }
+    .home-card:hover .btn-arrow { transform: translateX(3px); }
+
+    .hc-bar {
+      height: 4px;
+      width: 100%;
+    }
 
     /* ── 파일 업로드 ── */
     .upload-panel { background: #f8fafc; overflow-y: auto; padding: 28px; }
@@ -457,62 +558,89 @@
 
     <!-- 0. 홈 -->
     <div class="panel home-panel active" id="panel-home">
-      <div class="home-header">
+
+      <div class="home-hero">
+        <div class="home-hero-tag">Assembly Team Dashboard</div>
         <h2>조립팀 통합 대시보드</h2>
-        <p>메뉴를 선택하여 각 항목으로 이동하세요.</p>
+        <p>아래 메뉴를 선택하여 각 항목으로 이동하세요.</p>
       </div>
-      <div class="home-grid">
 
-        <div class="home-card" onclick="switchPanelByKey('material')">
-          <div class="hc-icon" style="background:#dbeafe; color:#2563eb">&#128230;</div>
-          <div class="hc-title">생산계획대비 자재현황</div>
-          <div class="hc-desc">생산 계획 기준 자재 부족 및 확보 현황을 확인합니다.</div>
-          <div class="hc-footer">
-            <span class="hc-link">바로가기</span>
-            <span class="hc-arrow">&#8250;</span>
+      <div class="home-body">
+        <div class="home-section-label">메뉴 선택</div>
+        <div class="home-grid">
+
+          <div class="home-card" onclick="switchPanelByKey('material')">
+            <div class="hc-top">
+              <div class="hc-icon" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8)">&#128230;</div>
+            </div>
+            <div class="hc-body">
+              <div class="hc-title">생산계획대비<br>자재현황</div>
+              <div class="hc-desc">생산 계획 기준 자재 부족 및 확보 현황을 확인합니다.</div>
+              <button class="hc-btn" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8)">
+                바로가기 <span class="btn-arrow">&#8250;</span>
+              </button>
+            </div>
+            <div class="hc-bar" style="background:linear-gradient(90deg,#3b82f6,#1d4ed8)"></div>
           </div>
-        </div>
 
-        <div class="home-card" onclick="switchPanelByKey('production')">
-          <div class="hc-icon" style="background:#dcfce7; color:#16a34a">&#128200;</div>
-          <div class="hc-title">생산계획대비 실적현황</div>
-          <div class="hc-desc">생산 계획 대비 실제 생산 실적을 비교·분석합니다.</div>
-          <div class="hc-footer">
-            <span class="hc-link">바로가기</span>
-            <span class="hc-arrow">&#8250;</span>
+          <div class="home-card" onclick="switchPanelByKey('production')">
+            <div class="hc-top">
+              <div class="hc-icon" style="background:linear-gradient(135deg,#10b981,#059669)">&#128200;</div>
+            </div>
+            <div class="hc-body">
+              <div class="hc-title">생산계획대비<br>실적현황</div>
+              <div class="hc-desc">생산 계획 대비 실제 생산 실적을 비교·분석합니다.</div>
+              <button class="hc-btn" style="background:linear-gradient(135deg,#10b981,#059669)">
+                바로가기 <span class="btn-arrow">&#8250;</span>
+              </button>
+            </div>
+            <div class="hc-bar" style="background:linear-gradient(90deg,#10b981,#059669)"></div>
           </div>
-        </div>
 
-        <div class="home-card wip-card">
-          <div class="hc-icon" style="background:#f3e8ff; color:#7c3aed">&#128203;</div>
-          <div class="hc-title">조립실적 통합관리</div>
-          <div class="hc-desc">조립 실적 데이터를 통합 관리합니다. 현재 개발 중입니다.</div>
-          <div class="hc-footer">
-            <span class="hc-link">개발 진행 중</span>
-            <span class="hc-arrow">&#8250;</span>
+          <div class="home-card wip-card">
+            <div class="hc-top">
+              <div class="hc-icon" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9)">&#128203;</div>
+              <span class="hc-badge">준비중</span>
+            </div>
+            <div class="hc-body">
+              <div class="hc-title">조립실적<br>통합관리</div>
+              <div class="hc-desc">조립 실적 데이터를 통합 관리합니다. 현재 개발 중입니다.</div>
+              <button class="hc-btn" style="background:#94a3b8; pointer-events:none">
+                개발 중 <span class="btn-arrow">&#8250;</span>
+              </button>
+            </div>
+            <div class="hc-bar" style="background:linear-gradient(90deg,#8b5cf6,#6d28d9)"></div>
           </div>
-        </div>
 
-        <div class="home-card" onclick="switchPanelByKey('quality')">
-          <div class="hc-icon" style="background:#dcfce7; color:#15803d">&#9989;</div>
-          <div class="hc-title">품질관리 교육자료</div>
-          <div class="hc-desc">품질 반성회 및 교육 자료를 열람하고 관리합니다.</div>
-          <div class="hc-footer">
-            <span class="hc-link">바로가기</span>
-            <span class="hc-arrow">&#8250;</span>
+          <div class="home-card" onclick="switchPanelByKey('quality')">
+            <div class="hc-top">
+              <div class="hc-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706)">&#9989;</div>
+            </div>
+            <div class="hc-body">
+              <div class="hc-title">품질관리<br>교육자료</div>
+              <div class="hc-desc">품질 반성회 및 교육 자료를 열람하고 관리합니다.</div>
+              <button class="hc-btn" style="background:linear-gradient(135deg,#f59e0b,#d97706)">
+                바로가기 <span class="btn-arrow">&#8250;</span>
+              </button>
+            </div>
+            <div class="hc-bar" style="background:linear-gradient(90deg,#f59e0b,#d97706)"></div>
           </div>
-        </div>
 
-        <div class="home-card" onclick="switchPanelByKey('upload')">
-          <div class="hc-icon" style="background:#fef3c7; color:#d97706">&#128190;</div>
-          <div class="hc-title">파일 업로드</div>
-          <div class="hc-desc">BOM, 생산계획, 재고현황 등 12종 데이터 파일을 업로드합니다.</div>
-          <div class="hc-footer">
-            <span class="hc-link">데이터 파일 관리</span>
-            <span class="hc-arrow">&#8250;</span>
+          <div class="home-card" onclick="switchPanelByKey('upload')">
+            <div class="hc-top">
+              <div class="hc-icon" style="background:linear-gradient(135deg,#ec4899,#db2777)">&#128190;</div>
+            </div>
+            <div class="hc-body">
+              <div class="hc-title">파일 업로드</div>
+              <div class="hc-desc">BOM, 생산계획, 재고현황 등 12종 데이터 파일을 업로드합니다.</div>
+              <button class="hc-btn" style="background:linear-gradient(135deg,#ec4899,#db2777)">
+                바로가기 <span class="btn-arrow">&#8250;</span>
+              </button>
+            </div>
+            <div class="hc-bar" style="background:linear-gradient(90deg,#ec4899,#db2777)"></div>
           </div>
-        </div>
 
+        </div>
       </div>
     </div>
 
