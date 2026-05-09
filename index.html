@@ -1000,7 +1000,7 @@
     }
     const { data: { session } } = await sb.auth.getSession();
     if (session) {
-      const { data: profile } = await sb.from('profiles').select('name,status').eq('id', session.user.id).single();
+      const { data: profile } = await sb.from('profiles').select('name,status').eq('id', session.user.id).eq('source', 'dashboard').single();
       if (!profile || profile.status === 'pending') {
         await sb.auth.signOut();
       } else if (profile.status === 'rejected') {
@@ -1055,8 +1055,8 @@
       errEl.classList.add('show'); return;
     }
 
-    // 승인 여부 확인
-    const { data: profile } = await sb.from('profiles').select('name,status').eq('id', data.user.id).single();
+    // 승인 여부 확인 (대시보드 가입자만)
+    const { data: profile } = await sb.from('profiles').select('name,status').eq('id', data.user.id).eq('source', 'dashboard').single();
 
     if (!profile || profile.status === 'pending') {
       await sb.auth.signOut();
@@ -1099,10 +1099,10 @@
       errEl.classList.add('show'); return;
     }
 
-    // profiles 테이블에 pending 상태로 등록
+    // profiles 테이블에 pending 상태로 등록 (source: dashboard)
     const userId = data.user?.id;
     if (userId) {
-      await sb.from('profiles').upsert({ id: userId, email, name, status: 'pending' });
+      await sb.from('profiles').upsert({ id: userId, email, name, status: 'pending', source: 'dashboard' });
     }
 
     if (data.session) await sb.auth.signOut(); // 즉시 로그아웃 (승인 전까지 대기)
@@ -1134,7 +1134,7 @@
   async function loadMembers() {
     const tbody = document.getElementById('members-tbody');
     tbody.innerHTML = '<tr><td colspan="6" class="members-empty">불러오는 중...</td></tr>';
-    const { data, error } = await sb.from('profiles').select('*').order('created_at', { ascending: false });
+    const { data, error } = await sb.from('profiles').select('*').eq('source', 'dashboard').order('created_at', { ascending: false });
     if (error || !data?.length) {
       tbody.innerHTML = '<tr><td colspan="6" class="members-empty">가입 신청 내역이 없습니다.</td></tr>';
       return;
