@@ -1122,7 +1122,7 @@
         sucEl.classList.add('show');
         setTimeout(() => switchTab('login'), 4000); return;
       }
-      const { error: upsertErr } = await sb.from('profiles').upsert({ id: userId, email, name, status: 'pending', source: 'dashboard' });
+      const { error: upsertErr } = await sb.from('profiles').upsert({ id: userId, email, name, display_name: name, status: 'pending', source: 'dashboard' });
       if (upsertErr) {
         await sb.auth.signOut();
         errEl.textContent = '신청 처리 중 오류가 발생했습니다: ' + upsertErr.message;
