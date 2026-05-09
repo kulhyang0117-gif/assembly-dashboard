@@ -5,11 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>조립팀 통합 대시보드</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
       font-family: 'Segoe UI', 'Malgun Gothic', sans-serif;
@@ -28,48 +24,81 @@
       flex-direction: column;
       box-shadow: 2px 0 8px rgba(0,0,0,0.18);
       z-index: 10;
+      transition: width 0.22s ease, min-width 0.22s ease;
+      overflow: hidden;
     }
 
+    .sidebar.collapsed {
+      width: 60px;
+      min-width: 60px;
+    }
+
+    /* 헤더 */
     .sidebar-header {
-      padding: 28px 20px 20px;
+      padding: 20px 14px;
       border-bottom: 1px solid #2d3a52;
-    }
-
-    .sidebar-header .logo-row {
       display: flex;
       align-items: center;
       gap: 10px;
+      flex-shrink: 0;
     }
 
-    .sidebar-header .logo-icon {
+    .logo-icon {
       width: 36px;
       height: 36px;
+      min-width: 36px;
       background: linear-gradient(135deg, #3b82f6, #1d4ed8);
       border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 18px;
-      flex-shrink: 0;
+      cursor: pointer;
     }
 
-    .sidebar-header h1 {
+    .logo-text {
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .logo-text h1 {
       font-size: 15px;
       font-weight: 700;
       color: #e2e8f0;
-      line-height: 1.3;
+      white-space: nowrap;
     }
 
-    .sidebar-header .subtitle {
+    .logo-text .subtitle {
       font-size: 11px;
       color: #64748b;
       margin-top: 2px;
+      white-space: nowrap;
     }
 
+    .sidebar-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #475569;
+      font-size: 18px;
+      padding: 4px 6px;
+      border-radius: 6px;
+      transition: color 0.18s, background 0.18s;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+
+    .sidebar-toggle:hover { color: #e2e8f0; background: #243048; }
+
+    .sidebar.collapsed .logo-text,
+    .sidebar.collapsed .sidebar-toggle { display: none; }
+
+    /* 네비 */
     .sidebar-nav {
       flex: 1;
-      padding: 16px 0;
+      padding: 12px 0;
       overflow-y: auto;
+      overflow-x: hidden;
     }
 
     .nav-section-label {
@@ -79,7 +108,11 @@
       text-transform: uppercase;
       letter-spacing: 0.08em;
       padding: 8px 20px 4px;
+      white-space: nowrap;
+      transition: opacity 0.18s;
     }
+
+    .sidebar.collapsed .nav-section-label { opacity: 0; height: 0; padding: 0; overflow: hidden; }
 
     .nav-item {
       display: flex;
@@ -93,55 +126,76 @@
       border-left: 3px solid transparent;
       transition: all 0.18s ease;
       user-select: none;
+      white-space: nowrap;
     }
 
-    .nav-item:hover {
-      background: #243048;
-      color: #e2e8f0;
+    .sidebar.collapsed .nav-item {
+      padding: 12px 0;
+      justify-content: center;
+      border-left: 3px solid transparent;
     }
 
-    .nav-item.active {
-      background: #1e3a5f;
-      color: #60a5fa;
-      border-left-color: #3b82f6;
-    }
+    .nav-item:hover { background: #243048; color: #e2e8f0; }
+    .nav-item.active { background: #1e3a5f; color: #60a5fa; border-left-color: #3b82f6; }
 
     .nav-item .nav-icon {
-      font-size: 16px;
+      font-size: 17px;
       width: 20px;
       text-align: center;
       flex-shrink: 0;
     }
 
+    .nav-item .nav-text { flex: 1; }
+
     .nav-item .nav-badge {
-      margin-left: auto;
-      background: #f59e0b;
-      color: #1a2236;
+      background: #374151;
+      color: #6b7280;
       font-size: 10px;
       font-weight: 700;
       padding: 2px 7px;
       border-radius: 99px;
+      flex-shrink: 0;
     }
 
-    .nav-item .nav-badge.wip {
-      background: #374151;
-      color: #6b7280;
-    }
+    .sidebar.collapsed .nav-text,
+    .sidebar.collapsed .nav-badge { display: none; }
 
+    /* 툴팁 (접혔을 때 hover) */
+    .sidebar.collapsed .nav-item { position: relative; }
+    .sidebar.collapsed .nav-item::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      left: 68px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: #1e293b;
+      color: #e2e8f0;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 6px 12px;
+      border-radius: 6px;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      z-index: 999;
+    }
+    .sidebar.collapsed .nav-item:hover::after { opacity: 1; }
+
+    /* 푸터 */
     .sidebar-footer {
-      padding: 16px 20px;
+      padding: 14px 20px;
       border-top: 1px solid #2d3a52;
       font-size: 11px;
       color: #475569;
-    }
-
-    /* ── 메인 콘텐츠 ── */
-    .main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
+      white-space: nowrap;
       overflow: hidden;
     }
+    .sidebar.collapsed .sidebar-footer { display: none; }
+
+    /* ── 메인 ── */
+    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 
     .topbar {
       background: #fff;
@@ -154,48 +208,20 @@
       flex-shrink: 0;
     }
 
-    .topbar-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: #1e293b;
-    }
+    .topbar-title { font-size: 16px; font-weight: 700; color: #1e293b; }
+    .topbar-meta  { font-size: 12px; color: #94a3b8; }
 
-    .topbar-meta {
-      font-size: 12px;
-      color: #94a3b8;
-    }
-
-    .content-area {
-      flex: 1;
-      overflow: hidden;
-      position: relative;
-    }
+    .content-area { flex: 1; overflow: hidden; position: relative; }
 
     /* ── 패널 공통 ── */
-    .panel {
-      display: none;
-      width: 100%;
-      height: 100%;
-    }
+    .panel { display: none; width: 100%; height: 100%; }
+    .panel.active { display: flex; flex-direction: column; }
 
-    .panel.active {
-      display: flex;
-      flex-direction: column;
-    }
+    /* ── iframe ── */
+    .iframe-panel iframe { flex: 1; width: 100%; border: none; }
 
-    /* ── iframe 패널 ── */
-    .iframe-panel iframe {
-      flex: 1;
-      width: 100%;
-      border: none;
-    }
-
-    /* ── WIP 패널 ── */
-    .wip-panel {
-      align-items: center;
-      justify-content: center;
-      background: #f8fafc;
-    }
+    /* ── WIP ── */
+    .wip-panel { align-items: center; justify-content: center; background: #f8fafc; }
 
     .wip-box {
       text-align: center;
@@ -205,307 +231,293 @@
       box-shadow: 0 4px 24px rgba(0,0,0,0.08);
       max-width: 400px;
     }
+    .wip-box .wip-icon { font-size: 56px; margin-bottom: 20px; }
+    .wip-box h2 { font-size: 20px; font-weight: 700; color: #1e293b; margin-bottom: 10px; }
+    .wip-box p  { font-size: 14px; color: #64748b; line-height: 1.6; }
 
-    .wip-box .wip-icon {
-      font-size: 56px;
-      margin-bottom: 20px;
-    }
-
-    .wip-box h2 {
-      font-size: 20px;
-      font-weight: 700;
-      color: #1e293b;
-      margin-bottom: 10px;
-    }
-
-    .wip-box p {
-      font-size: 14px;
-      color: #64748b;
-      line-height: 1.6;
-    }
-
-    .progress-bar-wrap {
-      margin-top: 24px;
-      background: #e2e8f0;
-      border-radius: 99px;
-      height: 8px;
-      overflow: hidden;
-    }
-
+    .progress-bar-wrap { margin-top: 24px; background: #e2e8f0; border-radius: 99px; height: 8px; overflow: hidden; }
     .progress-bar-fill {
-      height: 100%;
-      width: 35%;
+      height: 100%; width: 35%;
       background: linear-gradient(90deg, #3b82f6, #60a5fa);
       border-radius: 99px;
       animation: pulse-bar 2s ease-in-out infinite;
     }
+    @keyframes pulse-bar { 0%,100%{opacity:1} 50%{opacity:0.6} }
 
-    @keyframes pulse-bar {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.6; }
-    }
-
-    /* ── 파일 업로드 패널 ── */
-    .upload-panel {
-      background: #f8fafc;
+    /* ── 홈 패널 ── */
+    .home-panel {
+      background: #f0f2f5;
       overflow-y: auto;
-      padding: 28px;
+      padding: 36px 40px;
     }
 
-    .upload-panel h2 {
-      font-size: 18px;
-      font-weight: 700;
-      color: #1e293b;
-      margin-bottom: 6px;
-    }
+    .home-header { margin-bottom: 32px; }
+    .home-header h2 { font-size: 24px; font-weight: 800; color: #1e293b; }
+    .home-header p  { font-size: 14px; color: #64748b; margin-top: 6px; }
 
-    .upload-panel .desc {
-      font-size: 13px;
-      color: #64748b;
-      margin-bottom: 24px;
-    }
-
-    .upload-grid {
+    .home-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 16px;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 20px;
     }
 
-    .upload-card {
+    .home-card {
       background: #fff;
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+      border-radius: 16px;
+      padding: 28px 24px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.07);
       border: 1px solid #e2e8f0;
-      transition: box-shadow 0.18s;
-    }
-
-    .upload-card:hover {
-      box-shadow: 0 4px 16px rgba(0,0,0,0.11);
-    }
-
-    .upload-card .card-header {
+      cursor: pointer;
+      transition: transform 0.18s, box-shadow 0.18s;
       display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 14px;
+      flex-direction: column;
+      gap: 14px;
     }
 
-    .upload-card .card-icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 8px;
+    .home-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 28px rgba(0,0,0,0.12);
+    }
+
+    .home-card.wip-card { opacity: 0.65; cursor: default; }
+    .home-card.wip-card:hover { transform: none; box-shadow: 0 2px 10px rgba(0,0,0,0.07); }
+
+    .home-card .hc-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 18px;
-      flex-shrink: 0;
+      font-size: 26px;
     }
 
-    .upload-card .card-label {
-      font-size: 14px;
-      font-weight: 600;
+    .home-card .hc-title {
+      font-size: 15px;
+      font-weight: 700;
       color: #1e293b;
     }
 
-    .upload-card .card-sub {
-      font-size: 11px;
-      color: #94a3b8;
-      margin-top: 1px;
-    }
-
-    .drop-zone {
-      border: 2px dashed #cbd5e1;
-      border-radius: 8px;
-      padding: 16px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.18s;
-      position: relative;
-    }
-
-    .drop-zone:hover,
-    .drop-zone.dragover {
-      border-color: #3b82f6;
-      background: #eff6ff;
-    }
-
-    .drop-zone input[type="file"] {
-      position: absolute;
-      inset: 0;
-      opacity: 0;
-      cursor: pointer;
-      width: 100%;
-      height: 100%;
-    }
-
-    .drop-zone .drop-text {
+    .home-card .hc-desc {
       font-size: 12px;
-      color: #64748b;
-      pointer-events: none;
+      color: #94a3b8;
+      line-height: 1.5;
     }
 
-    .drop-zone .drop-text strong {
-      color: #3b82f6;
-    }
-
-    .file-list {
-      margin-top: 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .file-item {
+    .home-card .hc-footer {
+      margin-top: auto;
       display: flex;
       align-items: center;
-      gap: 8px;
-      background: #f1f5f9;
-      border-radius: 6px;
-      padding: 6px 10px;
-      font-size: 12px;
-      color: #334155;
+      justify-content: space-between;
     }
 
-    .file-item .file-name {
-      flex: 1;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+    .home-card .hc-link {
+      font-size: 11px;
+      color: #3b82f6;
+      font-weight: 600;
     }
 
-    .file-item .file-size {
-      color: #94a3b8;
-      flex-shrink: 0;
+    .home-card.wip-card .hc-link { color: #94a3b8; }
+
+    .hc-arrow { font-size: 16px; color: #cbd5e1; }
+    .home-card:hover .hc-arrow { color: #3b82f6; }
+    .home-card.wip-card:hover .hc-arrow { color: #cbd5e1; }
+
+    /* ── 파일 업로드 ── */
+    .upload-panel { background: #f8fafc; overflow-y: auto; padding: 28px; }
+    .upload-panel h2 { font-size: 18px; font-weight: 700; color: #1e293b; margin-bottom: 6px; }
+    .upload-panel .desc { font-size: 13px; color: #64748b; margin-bottom: 24px; }
+
+    .upload-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+
+    .upload-card {
+      background: #fff; border-radius: 12px; padding: 20px;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.07); border: 1px solid #e2e8f0;
+      transition: box-shadow 0.18s;
+    }
+    .upload-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.11); }
+
+    .upload-card .card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+
+    .upload-card .card-icon {
+      width: 36px; height: 36px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;
     }
 
+    .upload-card .card-label { font-size: 14px; font-weight: 600; color: #1e293b; }
+    .upload-card .card-sub   { font-size: 11px; color: #94a3b8; margin-top: 1px; }
+
+    .drop-zone {
+      border: 2px dashed #cbd5e1; border-radius: 8px; padding: 16px;
+      text-align: center; cursor: pointer; transition: all 0.18s; position: relative;
+    }
+    .drop-zone:hover, .drop-zone.dragover { border-color: #3b82f6; background: #eff6ff; }
+    .drop-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+    .drop-zone .drop-text { font-size: 12px; color: #64748b; pointer-events: none; }
+    .drop-zone .drop-text strong { color: #3b82f6; }
+
+    .file-list { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; }
+
+    .file-item {
+      display: flex; align-items: center; gap: 8px;
+      background: #f1f5f9; border-radius: 6px; padding: 6px 10px;
+      font-size: 12px; color: #334155;
+    }
+    .file-item .file-name  { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .file-item .file-size  { color: #94a3b8; flex-shrink: 0; }
     .file-item .remove-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: #94a3b8;
-      font-size: 14px;
-      line-height: 1;
-      flex-shrink: 0;
-      padding: 0 2px;
+      background: none; border: none; cursor: pointer; color: #94a3b8;
+      font-size: 14px; line-height: 1; flex-shrink: 0; padding: 0 2px;
     }
+    .file-item .remove-btn:hover { color: #ef4444; }
 
-    .file-item .remove-btn:hover {
-      color: #ef4444;
-    }
-
-    .upload-all-btn {
-      margin-top: 28px;
-      display: flex;
-      justify-content: flex-end;
-    }
+    .upload-all-btn { margin-top: 28px; display: flex; justify-content: flex-end; }
 
     .btn-primary {
       background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      padding: 11px 28px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: opacity 0.18s;
+      color: #fff; border: none; border-radius: 8px; padding: 11px 28px;
+      font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity 0.18s;
+      text-decoration: none; display: inline-block;
     }
+    .btn-primary:hover { opacity: 0.88; }
+    .btn-primary:disabled { opacity: 0.4; cursor: default; }
 
-    .btn-primary:hover {
-      opacity: 0.88;
-    }
-
-    .btn-primary:disabled {
-      opacity: 0.4;
-      cursor: default;
-    }
-
-    /* 업로드 완료 토스트 */
+    /* 토스트 */
     .toast {
-      position: fixed;
-      bottom: 28px;
-      right: 28px;
-      background: #10b981;
-      color: #fff;
-      padding: 12px 22px;
-      border-radius: 10px;
-      font-size: 14px;
-      font-weight: 600;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-      display: none;
-      z-index: 100;
+      position: fixed; bottom: 28px; right: 28px;
+      background: #10b981; color: #fff; padding: 12px 22px;
+      border-radius: 10px; font-size: 14px; font-weight: 600;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15); display: none; z-index: 100;
       animation: toast-in 0.25s ease;
     }
-
-    @keyframes toast-in {
-      from { opacity: 0; transform: translateY(16px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
+    @keyframes toast-in { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
   </style>
 </head>
 <body>
 
 <!-- ── 사이드바 ── -->
-<aside class="sidebar">
+<aside class="sidebar" id="sidebar">
   <div class="sidebar-header">
-    <div class="logo-row">
-      <div class="logo-icon">&#9881;</div>
-      <div>
-        <h1>조립팀</h1>
-        <div class="subtitle">통합 대시보드</div>
-      </div>
+    <div class="logo-icon" onclick="switchPanelByKey('home')" title="홈으로">&#9881;</div>
+    <div class="logo-text">
+      <h1>조립팀</h1>
+      <div class="subtitle">통합 대시보드</div>
     </div>
+    <button class="sidebar-toggle" onclick="toggleSidebar()" title="사이드바 접기">&#8249;</button>
   </div>
 
   <nav class="sidebar-nav">
+    <div class="nav-item active" data-panel="home" data-tooltip="홈" onclick="switchPanel(this)">
+      <span class="nav-icon">&#127968;</span>
+      <span class="nav-text">홈</span>
+    </div>
+
     <div class="nav-section-label">생산 현황</div>
 
-    <div class="nav-item active" data-panel="material" onclick="switchPanel(this)">
+    <div class="nav-item" data-panel="material" data-tooltip="생산계획대비 자재현황" onclick="switchPanel(this)">
       <span class="nav-icon">&#128230;</span>
-      <span>생산계획대비 자재현황</span>
+      <span class="nav-text">생산계획대비 자재현황</span>
     </div>
 
-    <div class="nav-item" data-panel="production" onclick="switchPanel(this)">
+    <div class="nav-item" data-panel="production" data-tooltip="생산계획대비 실적현황" onclick="switchPanel(this)">
       <span class="nav-icon">&#128200;</span>
-      <span>생산계획대비 실적현황</span>
+      <span class="nav-text">생산계획대비 실적현황</span>
     </div>
 
-    <div class="nav-item" data-panel="assembly" onclick="switchPanel(this)">
+    <div class="nav-item" data-panel="assembly" data-tooltip="조립실적 통합관리" onclick="switchPanel(this)">
       <span class="nav-icon">&#128203;</span>
-      <span>조립실적 통합관리</span>
-      <span class="nav-badge wip">준비중</span>
+      <span class="nav-text">조립실적 통합관리</span>
+      <span class="nav-badge">준비중</span>
     </div>
 
     <div class="nav-section-label" style="margin-top:8px;">품질 / 자료</div>
 
-    <div class="nav-item" data-panel="quality" onclick="switchPanel(this)">
+    <div class="nav-item" data-panel="quality" data-tooltip="품질관리 교육자료" onclick="switchPanel(this)">
       <span class="nav-icon">&#9989;</span>
-      <span>품질관리 교육자료</span>
+      <span class="nav-text">품질관리 교육자료</span>
     </div>
 
-    <div class="nav-item" data-panel="upload" onclick="switchPanel(this)">
+    <div class="nav-item" data-panel="upload" data-tooltip="파일 업로드" onclick="switchPanel(this)">
       <span class="nav-icon">&#128190;</span>
-      <span>파일 업로드</span>
+      <span class="nav-text">파일 업로드</span>
     </div>
   </nav>
 
-  <div class="sidebar-footer">
-    &copy; 2026 조립팀 · Production Summary
-  </div>
+  <div class="sidebar-footer">&copy; 2026 조립팀 · Production Summary</div>
 </aside>
 
-<!-- ── 메인 콘텐츠 ── -->
+<!-- ── 메인 ── -->
 <div class="main">
   <div class="topbar">
-    <div class="topbar-title" id="topbar-title">생산계획대비 자재현황</div>
-    <div class="topbar-meta" id="topbar-meta">material-shortage.vercel.app</div>
+    <div class="topbar-title" id="topbar-title">홈</div>
+    <div class="topbar-meta"  id="topbar-meta">조립팀 통합 대시보드</div>
   </div>
 
   <div class="content-area">
 
+    <!-- 0. 홈 -->
+    <div class="panel home-panel active" id="panel-home">
+      <div class="home-header">
+        <h2>조립팀 통합 대시보드</h2>
+        <p>메뉴를 선택하여 각 항목으로 이동하세요.</p>
+      </div>
+      <div class="home-grid">
+
+        <div class="home-card" onclick="switchPanelByKey('material')">
+          <div class="hc-icon" style="background:#dbeafe; color:#2563eb">&#128230;</div>
+          <div class="hc-title">생산계획대비 자재현황</div>
+          <div class="hc-desc">생산 계획 기준 자재 부족 및 확보 현황을 확인합니다.</div>
+          <div class="hc-footer">
+            <span class="hc-link">material-shortage.vercel.app</span>
+            <span class="hc-arrow">&#8250;</span>
+          </div>
+        </div>
+
+        <div class="home-card" onclick="switchPanelByKey('production')">
+          <div class="hc-icon" style="background:#dcfce7; color:#16a34a">&#128200;</div>
+          <div class="hc-title">생산계획대비 실적현황</div>
+          <div class="hc-desc">생산 계획 대비 실제 생산 실적을 비교·분석합니다.</div>
+          <div class="hc-footer">
+            <span class="hc-link">production-vs-plan.vercel.app</span>
+            <span class="hc-arrow">&#8250;</span>
+          </div>
+        </div>
+
+        <div class="home-card wip-card">
+          <div class="hc-icon" style="background:#f3e8ff; color:#7c3aed">&#128203;</div>
+          <div class="hc-title">조립실적 통합관리</div>
+          <div class="hc-desc">조립 실적 데이터를 통합 관리합니다. 현재 개발 중입니다.</div>
+          <div class="hc-footer">
+            <span class="hc-link">개발 진행 중</span>
+            <span class="hc-arrow">&#8250;</span>
+          </div>
+        </div>
+
+        <div class="home-card" onclick="switchPanelByKey('quality')">
+          <div class="hc-icon" style="background:#dcfce7; color:#15803d">&#9989;</div>
+          <div class="hc-title">품질관리 교육자료</div>
+          <div class="hc-desc">품질 반성회 및 교육 자료를 열람하고 관리합니다.</div>
+          <div class="hc-footer">
+            <span class="hc-link">quality-reflection-meeting.vercel.app</span>
+            <span class="hc-arrow">&#8250;</span>
+          </div>
+        </div>
+
+        <div class="home-card" onclick="switchPanelByKey('upload')">
+          <div class="hc-icon" style="background:#fef3c7; color:#d97706">&#128190;</div>
+          <div class="hc-title">파일 업로드</div>
+          <div class="hc-desc">BOM, 생산계획, 재고현황 등 12종 데이터 파일을 업로드합니다.</div>
+          <div class="hc-footer">
+            <span class="hc-link">데이터 파일 관리</span>
+            <span class="hc-arrow">&#8250;</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
     <!-- 1. 자재현황 -->
-    <div class="panel iframe-panel active" id="panel-material">
+    <div class="panel iframe-panel" id="panel-material">
       <iframe src="https://material-shortage.vercel.app/" title="생산계획대비 자재현황" allowfullscreen></iframe>
     </div>
 
@@ -520,9 +532,7 @@
         <div class="wip-icon">&#128295;</div>
         <h2>조립실적 통합관리</h2>
         <p>현재 개발 중인 메뉴입니다.<br>완성되는 대로 이곳에 연결될 예정입니다.</p>
-        <div class="progress-bar-wrap">
-          <div class="progress-bar-fill"></div>
-        </div>
+        <div class="progress-bar-wrap"><div class="progress-bar-fill"></div></div>
       </div>
     </div>
 
@@ -535,9 +545,7 @@
     <div class="panel upload-panel" id="panel-upload">
       <h2>파일 업로드</h2>
       <p class="desc">각 항목별로 파일을 선택하거나 드래그&amp;드롭하여 업로드하세요. Excel, CSV 등 모든 형식을 지원합니다.</p>
-
       <div class="upload-grid" id="upload-grid"></div>
-
       <div class="upload-all-btn">
         <button class="btn-primary" id="upload-all-btn" onclick="uploadAll()">전체 업로드</button>
       </div>
@@ -546,118 +554,103 @@
   </div>
 </div>
 
-<!-- 토스트 -->
-<div class="toast" id="toast">업로드 완료!</div>
+<div class="toast" id="toast"></div>
 
 <script>
-  // ── 패널 메타 정보 ──
+  // ── 패널 메타 ──
   const panelMeta = {
-    material:   { title: '생산계획대비 자재현황',   meta: 'material-shortage.vercel.app' },
-    production: { title: '생산계획대비 실적현황',   meta: 'production-vs-plan.vercel.app' },
-    assembly:   { title: '조립실적 통합관리',       meta: '개발 진행 중' },
-    quality:    { title: '품질관리 교육자료',       meta: 'quality-reflection-meeting.vercel.app' },
-    upload:     { title: '파일 업로드',             meta: '데이터 파일 관리' },
+    home:       { title: '홈',                       meta: '조립팀 통합 대시보드' },
+    material:   { title: '생산계획대비 자재현황',     meta: 'material-shortage.vercel.app' },
+    production: { title: '생산계획대비 실적현황',     meta: 'production-vs-plan.vercel.app' },
+    assembly:   { title: '조립실적 통합관리',         meta: '개발 진행 중' },
+    quality:    { title: '품질관리 교육자료',         meta: 'quality-reflection-meeting.vercel.app' },
+    upload:     { title: '파일 업로드',               meta: '데이터 파일 관리' },
   };
 
   function switchPanel(el) {
-    // 활성 nav 변경
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     el.classList.add('active');
-
-    // 패널 전환
     const key = el.dataset.panel;
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
     document.getElementById('panel-' + key).classList.add('active');
-
-    // 상단바 업데이트
     document.getElementById('topbar-title').textContent = panelMeta[key].title;
     document.getElementById('topbar-meta').textContent  = panelMeta[key].meta;
   }
 
-  // ── 파일 업로드 카드 정의 ──
+  function switchPanelByKey(key) {
+    const el = document.querySelector(`.nav-item[data-panel="${key}"]`);
+    if (el) switchPanel(el);
+  }
+
+  // ── 사이드바 토글 ──
+  function toggleSidebar() {
+    const sb  = document.getElementById('sidebar');
+    const btn = sb.querySelector('.sidebar-toggle');
+    const collapsed = sb.classList.toggle('collapsed');
+    btn.innerHTML = collapsed ? '&#8250;' : '&#8249;';
+  }
+
+  // ── 파일 업로드 ──
   const uploadItems = [
-    { key: 'bom',          label: 'BOM',             sub: '자재명세서',          icon: '&#128196;', color: '#dbeafe', iconColor: '#2563eb' },
-    { key: 'plan',         label: '생산계획',         sub: 'Production Plan',    icon: '&#128200;', color: '#dcfce7', iconColor: '#16a34a' },
-    { key: 'inventory',    label: '재고현황',         sub: 'Inventory Status',   icon: '&#128218;', color: '#fef9c3', iconColor: '#ca8a04' },
-    { key: 'packaging',    label: '포장사양',         sub: 'Packaging Spec',     icon: '&#128230;', color: '#fce7f3', iconColor: '#db2777' },
-    { key: 'prep',         label: '준비작업 마스터',  sub: 'Preparation Master', icon: '&#9881;',   color: '#f3e8ff', iconColor: '#7c3aed' },
-    { key: 'inspection',   label: '투입전 검사 마스터', sub: 'Pre-Input Inspection', icon: '&#128269;', color: '#ffedd5', iconColor: '#ea580c' },
-    { key: 'kitting',      label: '키팅된 자재',      sub: 'Kitted Materials',   icon: '&#128210;', color: '#e0f2fe', iconColor: '#0284c7' },
-    { key: 'uph',          label: '표준 UPH',         sub: 'Standard UPH',       icon: '&#9201;',   color: '#f0fdf4', iconColor: '#15803d' },
-    { key: 'daily',        label: '일일조립실적',     sub: 'Daily Assembly',     icon: '&#128203;', color: '#fef3c7', iconColor: '#d97706' },
-    { key: 'downtime',     label: '비가동현황',       sub: 'Downtime Status',    icon: '&#9888;',   color: '#fee2e2', iconColor: '#dc2626' },
-    { key: 'defect',       label: '공정불량현황',     sub: 'Process Defect',     icon: '&#128997;', color: '#fce7f3', iconColor: '#be185d' },
-    { key: 'defect_scrap', label: '공정불량폐기현황', sub: 'Defect Disposal',    icon: '&#128682;', color: '#f1f5f9', iconColor: '#475569' },
+    { key: 'bom',          label: 'BOM',             sub: '자재명세서',             icon: '&#128196;', color: '#dbeafe', iconColor: '#2563eb' },
+    { key: 'plan',         label: '생산계획',         sub: 'Production Plan',       icon: '&#128200;', color: '#dcfce7', iconColor: '#16a34a' },
+    { key: 'inventory',    label: '재고현황',         sub: 'Inventory Status',      icon: '&#128218;', color: '#fef9c3', iconColor: '#ca8a04' },
+    { key: 'packaging',    label: '포장사양',         sub: 'Packaging Spec',        icon: '&#128230;', color: '#fce7f3', iconColor: '#db2777' },
+    { key: 'prep',         label: '준비작업 마스터',  sub: 'Preparation Master',    icon: '&#9881;',   color: '#f3e8ff', iconColor: '#7c3aed' },
+    { key: 'inspection',   label: '투입전 검사 마스터', sub: 'Pre-Input Inspection',icon: '&#128269;', color: '#ffedd5', iconColor: '#ea580c' },
+    { key: 'kitting',      label: '키팅된 자재',      sub: 'Kitted Materials',      icon: '&#128210;', color: '#e0f2fe', iconColor: '#0284c7' },
+    { key: 'uph',          label: '표준 UPH',         sub: 'Standard UPH',          icon: '&#9201;',   color: '#f0fdf4', iconColor: '#15803d' },
+    { key: 'daily',        label: '일일조립실적',     sub: 'Daily Assembly',        icon: '&#128203;', color: '#fef3c7', iconColor: '#d97706' },
+    { key: 'downtime',     label: '비가동현황',       sub: 'Downtime Status',       icon: '&#9888;',   color: '#fee2e2', iconColor: '#dc2626' },
+    { key: 'defect',       label: '공정불량현황',     sub: 'Process Defect',        icon: '&#128997;', color: '#fce7f3', iconColor: '#be185d' },
+    { key: 'defect_scrap', label: '공정불량폐기현황', sub: 'Defect Disposal',       icon: '&#128682;', color: '#f1f5f9', iconColor: '#475569' },
   ];
 
-  // 파일 저장소
   const fileStore = {};
   uploadItems.forEach(item => { fileStore[item.key] = []; });
 
   function buildUploadGrid() {
     const grid = document.getElementById('upload-grid');
     grid.innerHTML = '';
-
     uploadItems.forEach(item => {
       const card = document.createElement('div');
       card.className = 'upload-card';
       card.innerHTML = `
         <div class="card-header">
-          <div class="card-icon" style="background:${item.color}; color:${item.iconColor}">${item.icon}</div>
+          <div class="card-icon" style="background:${item.color};color:${item.iconColor}">${item.icon}</div>
           <div>
             <div class="card-label">${item.label}</div>
             <div class="card-sub">${item.sub}</div>
           </div>
         </div>
         <div class="drop-zone" id="drop-${item.key}"
-             ondragover="onDragOver(event, '${item.key}')"
+             ondragover="onDragOver(event,'${item.key}')"
              ondragleave="onDragLeave('${item.key}')"
-             ondrop="onDrop(event, '${item.key}')">
-          <input type="file" multiple onchange="onFileChange(event, '${item.key}')" />
+             ondrop="onDrop(event,'${item.key}')">
+          <input type="file" multiple onchange="onFileChange(event,'${item.key}')" />
           <div class="drop-text"><strong>클릭</strong> 또는 파일을 여기에 드롭</div>
         </div>
-        <div class="file-list" id="list-${item.key}"></div>
-      `;
+        <div class="file-list" id="list-${item.key}"></div>`;
       grid.appendChild(card);
     });
   }
 
-  function onDragOver(e, key) {
-    e.preventDefault();
-    document.getElementById('drop-' + key).classList.add('dragover');
-  }
-
-  function onDragLeave(key) {
-    document.getElementById('drop-' + key).classList.remove('dragover');
-  }
-
-  function onDrop(e, key) {
-    e.preventDefault();
-    document.getElementById('drop-' + key).classList.remove('dragover');
-    addFiles(key, Array.from(e.dataTransfer.files));
-  }
-
-  function onFileChange(e, key) {
-    addFiles(key, Array.from(e.target.files));
-    e.target.value = '';
-  }
+  function onDragOver(e, key)  { e.preventDefault(); document.getElementById('drop-'+key).classList.add('dragover'); }
+  function onDragLeave(key)    { document.getElementById('drop-'+key).classList.remove('dragover'); }
+  function onDrop(e, key)      { e.preventDefault(); onDragLeave(key); addFiles(key, Array.from(e.dataTransfer.files)); }
+  function onFileChange(e, key){ addFiles(key, Array.from(e.target.files)); e.target.value=''; }
 
   function addFiles(key, files) {
     files.forEach(f => {
-      if (!fileStore[key].find(x => x.name === f.name && x.size === f.size)) {
-        fileStore[key].push(f);
-      }
+      if (!fileStore[key].find(x => x.name===f.name && x.size===f.size)) fileStore[key].push(f);
     });
     renderFileList(key);
   }
 
-  function removeFile(key, idx) {
-    fileStore[key].splice(idx, 1);
-    renderFileList(key);
-  }
+  function removeFile(key, idx) { fileStore[key].splice(idx, 1); renderFileList(key); }
 
   function renderFileList(key) {
-    const list = document.getElementById('list-' + key);
+    const list = document.getElementById('list-'+key);
     list.innerHTML = '';
     fileStore[key].forEach((f, i) => {
       const item = document.createElement('div');
@@ -665,45 +658,34 @@
       item.innerHTML = `
         <span class="file-name" title="${f.name}">${f.name}</span>
         <span class="file-size">${formatSize(f.size)}</span>
-        <button class="remove-btn" onclick="removeFile('${key}', ${i})" title="삭제">&#215;</button>
-      `;
+        <button class="remove-btn" onclick="removeFile('${key}',${i})">&#215;</button>`;
       list.appendChild(item);
     });
   }
 
-  function formatSize(bytes) {
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / 1024 / 1024).toFixed(1) + ' MB';
+  function formatSize(b) {
+    if (b < 1024) return b+' B';
+    if (b < 1048576) return (b/1024).toFixed(1)+' KB';
+    return (b/1048576).toFixed(1)+' MB';
   }
 
   function uploadAll() {
-    const total = Object.values(fileStore).reduce((s, arr) => s + arr.length, 0);
-    if (total === 0) {
-      alert('업로드할 파일이 없습니다.\n각 항목에 파일을 추가해 주세요.');
-      return;
-    }
-
+    const total = Object.values(fileStore).reduce((s,a) => s+a.length, 0);
+    if (total === 0) { alert('업로드할 파일이 없습니다.\n각 항목에 파일을 추가해 주세요.'); return; }
     const btn = document.getElementById('upload-all-btn');
-    btn.disabled = true;
-    btn.textContent = '업로드 중...';
-
-    // 실제 서버 연동 시 이 부분을 교체하세요
+    btn.disabled = true; btn.textContent = '업로드 중...';
     setTimeout(() => {
-      btn.disabled = false;
-      btn.textContent = '전체 업로드';
+      btn.disabled = false; btn.textContent = '전체 업로드';
       showToast(`${total}개 파일 업로드 완료`);
     }, 1200);
   }
 
   function showToast(msg) {
     const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.style.display = 'block';
+    t.textContent = msg; t.style.display = 'block';
     setTimeout(() => { t.style.display = 'none'; }, 3000);
   }
 
-  // 초기화
   buildUploadGrid();
 </script>
 </body>
