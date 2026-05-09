@@ -1094,19 +1094,38 @@
     });
     btn.disabled = false; btn.textContent = '회원가입';
 
-    if (error) {
-      errEl.textContent = error.message.includes('already') ? '이미 가입된 이메일입니다.' : error.message;
-      errEl.classList.add('show'); return;
+    if (error && !error.message.includes('already')) {
+      errEl.textContent = error.message; errEl.classList.add('show'); return;
     }
 
-    // profiles 테이블에 pending 상태로 등록 (source: dashboard)
-    const userId = data.user?.id;
+    let userId = data?.user?.id;
+
+    // 이미 가입된 이메일이면 기존 계정으로 로그인해서 ID 확보
+    if (error && error.message.includes('already')) {
+      const { data: signInData, error: signInErr } = await sb.auth.signInWithPassword({ email, password: pw });
+      if (signInErr) {
+        errEl.textContent = '이미 다른 서비스에 가입된 이메일입니다. 해당 서비스의 비밀번호를 입력해주세요.';
+        errEl.classList.add('show'); return;
+      }
+      userId = signInData.user.id;
+    }
+
     if (userId) {
+      // 이미 대시보드 신청 여부 확인
+      const { data: existing } = await sb.from('profiles').select('id,status').eq('id', userId).eq('source', 'dashboard').single();
+      if (existing) {
+        await sb.auth.signOut();
+        sucEl.textContent = existing.status === 'approved'
+          ? '이미 승인된 계정입니다. 로그인 탭에서 로그인해주세요.'
+          : '이미 신청된 계정입니다. 관리자 승인을 기다려주세요.';
+        sucEl.classList.add('show');
+        setTimeout(() => switchTab('login'), 4000); return;
+      }
       await sb.from('profiles').upsert({ id: userId, email, name, status: 'pending', source: 'dashboard' });
     }
 
-    if (data.session) await sb.auth.signOut(); // 즉시 로그아웃 (승인 전까지 대기)
-    sucEl.textContent = '가입 신청이 완료되었습니다. 관리자 승인 후 로그인 가능합니다.';
+    if (data?.session || userId) await sb.auth.signOut();
+    sucEl.textContent = '접근 신청이 완료되었습니다. 관리자 승인 후 로그인 가능합니다.';
     sucEl.classList.add('show');
     setTimeout(() => switchTab('login'), 4000);
   }
