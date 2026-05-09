@@ -577,6 +577,63 @@
     }
     .auth-success.show { display: block; }
 
+    /* ── 회원관리 패널 ── */
+    .members-panel { background: #f8fafc; overflow-y: auto; padding: 28px; }
+    .members-panel h2 { font-size: 18px; font-weight: 700; color: #1e293b; margin-bottom: 6px; }
+    .members-panel .desc { font-size: 13px; color: #64748b; margin-bottom: 20px; }
+
+    .members-table-wrap {
+      background: #fff; border-radius: 12px;
+      border: 1px solid #e2e8f0; overflow: hidden;
+    }
+    .members-table { width: 100%; border-collapse: collapse; }
+    .members-table th {
+      background: #f8fafc; padding: 12px 16px;
+      font-size: 12px; font-weight: 700; color: #64748b;
+      text-align: left; border-bottom: 1px solid #e2e8f0;
+    }
+    .members-table td {
+      padding: 13px 16px; font-size: 13px; color: #334155;
+      border-bottom: 1px solid #f1f5f9; vertical-align: middle;
+    }
+    .members-table tr:last-child td { border-bottom: none; }
+    .members-table tr:hover td { background: #f8fafc; }
+
+    .status-badge {
+      display: inline-block; font-size: 11px; font-weight: 700;
+      padding: 3px 10px; border-radius: 99px;
+    }
+    .status-badge.pending  { background: #fef9c3; color: #a16207; }
+    .status-badge.approved { background: #dcfce7; color: #15803d; }
+    .status-badge.rejected { background: #fee2e2; color: #dc2626; }
+
+    .action-btn {
+      font-size: 11px; font-weight: 700; padding: 5px 12px;
+      border-radius: 6px; border: none; cursor: pointer;
+      transition: opacity 0.15s; font-family: inherit; margin-right: 4px;
+    }
+    .action-btn:hover { opacity: 0.75; }
+    .action-btn.approve { background: #dcfce7; color: #15803d; }
+    .action-btn.reject  { background: #fee2e2; color: #dc2626; }
+
+    .members-refresh {
+      margin-bottom: 16px; display: flex; justify-content: flex-end;
+    }
+    .members-refresh button {
+      background: #f1f5f9; border: 1px solid #e2e8f0;
+      color: #475569; font-size: 12px; font-weight: 600;
+      padding: 7px 16px; border-radius: 8px; cursor: pointer;
+      font-family: inherit; transition: background 0.15s;
+    }
+    .members-refresh button:hover { background: #e2e8f0; }
+
+    .members-empty { text-align: center; padding: 40px; color: #94a3b8; font-size: 14px; }
+
+    .admin-only { display: none !important; }
+    .admin-only.visible { display: flex !important; }
+    .admin-nav { display: none; }
+    .admin-nav.visible { display: block; }
+
     /* 상단바 유저 영역 */
     .topbar-right {
       display: flex; align-items: center; gap: 12px; flex-shrink: 0;
@@ -696,6 +753,13 @@
     <div class="nav-item" data-panel="upload" data-tooltip="파일 업로드" onclick="switchPanel(this)">
       <span class="nav-icon">&#128190;</span>
       <span class="nav-text">파일 업로드</span>
+    </div>
+
+    <div class="nav-section-label admin-nav" style="margin-top:8px;" id="admin-nav-label">관리</div>
+
+    <div class="nav-item admin-nav" id="admin-nav-members" data-panel="members" data-tooltip="회원관리" onclick="switchPanel(this)">
+      <span class="nav-icon">&#128101;</span>
+      <span class="nav-text">회원관리</span>
     </div>
   </nav>
 
@@ -837,6 +901,31 @@
       </div>
     </div>
 
+    <!-- 6. 회원관리 (관리자 전용) -->
+    <div class="panel members-panel" id="panel-members">
+      <h2>회원관리</h2>
+      <p class="desc">가입 신청 회원을 승인하거나 거절할 수 있습니다.</p>
+      <div class="members-refresh">
+        <button onclick="loadMembers()">&#8635; 새로고침</button>
+      </div>
+      <div class="members-table-wrap">
+        <table class="members-table">
+          <thead>
+            <tr>
+              <th>이름</th>
+              <th>이메일</th>
+              <th>가입 신청일</th>
+              <th>상태</th>
+              <th>액션</th>
+            </tr>
+          </thead>
+          <tbody id="members-tbody">
+            <tr><td colspan="5" class="members-empty">데이터를 불러오는 중...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -865,25 +954,30 @@
 
   // 초기 세션 확인
   async function initAuth() {
-    // 관리자 세션
     if (sessionStorage.getItem('db_admin') || localStorage.getItem('db_admin')) {
-      showDashboard('관리자');
-      return;
+      showDashboard('관리자', true); return;
     }
-    // Supabase 세션
     const { data: { session } } = await sb.auth.getSession();
     if (session) {
-      const name = session.user.user_metadata?.name || session.user.email.split('@')[0];
-      showDashboard(name);
-      return;
+      const { data: profile } = await sb.from('profiles').select('name,status').eq('id', session.user.id).single();
+      if (!profile || profile.status === 'pending') {
+        await sb.auth.signOut();
+      } else if (profile.status === 'rejected') {
+        await sb.auth.signOut();
+      } else {
+        showDashboard(profile.name || session.user.email.split('@')[0], false); return;
+      }
     }
-    // 로그인 화면
     document.getElementById('auth-overlay').classList.remove('hidden');
   }
 
-  function showDashboard(name) {
+  function showDashboard(name, isAdmin) {
     document.getElementById('auth-overlay').classList.add('hidden');
     document.getElementById('topbar-username').textContent = name;
+    // 관리자 전용 메뉴 표시
+    document.querySelectorAll('.admin-nav').forEach(el => {
+      el.classList.toggle('visible', isAdmin);
+    });
   }
 
   async function doLogin(e) {
@@ -906,7 +1000,7 @@
         sessionStorage.setItem('db_admin', '1');
         localStorage.removeItem('db_cred');
       }
-      showDashboard('관리자');
+      showDashboard('관리자', true);
       btn.disabled = false; btn.textContent = '로그인';
       return;
     }
@@ -917,48 +1011,63 @@
 
     if (error) {
       errEl.textContent = '이메일 또는 비밀번호가 올바르지 않습니다.';
-      errEl.classList.add('show');
-      return;
+      errEl.classList.add('show'); return;
     }
+
+    // 승인 여부 확인
+    const { data: profile } = await sb.from('profiles').select('name,status').eq('id', data.user.id).single();
+
+    if (!profile || profile.status === 'pending') {
+      await sb.auth.signOut();
+      errEl.textContent = '관리자 승인 대기 중입니다. 승인 후 로그인 가능합니다.';
+      errEl.classList.add('show'); return;
+    }
+    if (profile.status === 'rejected') {
+      await sb.auth.signOut();
+      errEl.textContent = '가입이 거절되었습니다. 관리자에게 문의하세요.';
+      errEl.classList.add('show'); return;
+    }
+
     if (remember) {
       localStorage.setItem('db_cred', btoa(JSON.stringify({ e: email, p: pw })));
     } else {
       localStorage.removeItem('db_cred');
     }
-    const name = data.user.user_metadata?.name || data.user.email.split('@')[0];
-    showDashboard(name);
+    showDashboard(profile.name || data.user.email.split('@')[0], false);
   }
 
   async function doSignup(e) {
     e.preventDefault();
-    const name    = document.getElementById('signup-name').value.trim();
-    const email   = document.getElementById('signup-email').value.trim();
-    const pw      = document.getElementById('signup-pw').value;
-    const errEl   = document.getElementById('signup-error');
-    const sucEl   = document.getElementById('signup-success');
-    const btn     = document.getElementById('signup-btn');
+    const name  = document.getElementById('signup-name').value.trim();
+    const email = document.getElementById('signup-email').value.trim();
+    const pw    = document.getElementById('signup-pw').value;
+    const errEl = document.getElementById('signup-error');
+    const sucEl = document.getElementById('signup-success');
+    const btn   = document.getElementById('signup-btn');
 
     errEl.classList.remove('show'); sucEl.classList.remove('show');
     btn.disabled = true; btn.textContent = '가입 중...';
 
     const { data, error } = await sb.auth.signUp({
-      email, password: pw,
-      options: { data: { name } }
+      email, password: pw, options: { data: { name } }
     });
     btn.disabled = false; btn.textContent = '회원가입';
 
     if (error) {
       errEl.textContent = error.message.includes('already') ? '이미 가입된 이메일입니다.' : error.message;
-      errEl.classList.add('show');
-      return;
+      errEl.classList.add('show'); return;
     }
-    if (data.session) {
-      showDashboard(name);
-    } else {
-      sucEl.textContent = '이메일로 확인 링크가 발송되었습니다. 확인 후 로그인해주세요.';
-      sucEl.classList.add('show');
-      setTimeout(() => switchTab('login'), 3000);
+
+    // profiles 테이블에 pending 상태로 등록
+    const userId = data.user?.id;
+    if (userId) {
+      await sb.from('profiles').upsert({ id: userId, email, name, status: 'pending' });
     }
+
+    if (data.session) await sb.auth.signOut(); // 즉시 로그아웃 (승인 전까지 대기)
+    sucEl.textContent = '가입 신청이 완료되었습니다. 관리자 승인 후 로그인 가능합니다.';
+    sucEl.classList.add('show');
+    setTimeout(() => switchTab('login'), 4000);
   }
 
   async function doLogout() {
@@ -967,6 +1076,7 @@
     localStorage.removeItem('db_admin');
     document.getElementById('auth-overlay').classList.remove('hidden');
     document.getElementById('topbar-username').textContent = '';
+    document.querySelectorAll('.admin-nav').forEach(el => el.classList.remove('visible'));
   }
 
   function switchTab(tab) {
@@ -977,6 +1087,41 @@
     document.getElementById('login-error').classList.remove('show');
     document.getElementById('signup-error').classList.remove('show');
     document.getElementById('signup-success').classList.remove('show');
+  }
+
+  // ── 회원관리 ──
+  async function loadMembers() {
+    const tbody = document.getElementById('members-tbody');
+    tbody.innerHTML = '<tr><td colspan="5" class="members-empty">불러오는 중...</td></tr>';
+    const { data, error } = await sb.from('profiles').select('*').order('created_at', { ascending: false });
+    if (error || !data?.length) {
+      tbody.innerHTML = '<tr><td colspan="5" class="members-empty">가입 신청 내역이 없습니다.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.map(m => {
+      const date = new Date(m.created_at).toLocaleDateString('ko-KR');
+      const badge = `<span class="status-badge ${m.status}">${
+        m.status === 'pending' ? '대기중' : m.status === 'approved' ? '승인됨' : '거절됨'
+      }</span>`;
+      const actions = m.status !== 'approved'
+        ? `<button class="action-btn approve" onclick="setMemberStatus('${m.id}','approved')">승인</button>`
+        : '';
+      const reject = m.status !== 'rejected'
+        ? `<button class="action-btn reject"  onclick="setMemberStatus('${m.id}','rejected')">거절</button>`
+        : '';
+      return `<tr>
+        <td>${m.name}</td>
+        <td>${m.email}</td>
+        <td>${date}</td>
+        <td>${badge}</td>
+        <td>${actions}${reject}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  async function setMemberStatus(id, status) {
+    await sb.from('profiles').update({ status }).eq('id', id);
+    loadMembers();
   }
 
   // 페이지 로드 시 인증 초기화
@@ -990,6 +1135,7 @@
     assembly:   { title: '조립실적 통합관리',         meta: '개발 진행 중' },
     quality:    { title: '품질관리 교육자료',         meta: 'quality-reflection-meeting.vercel.app' },
     upload:     { title: '파일 업로드',               meta: '데이터 파일 관리' },
+    members:    { title: '회원관리',                  meta: '관리자 전용' },
   };
 
   function switchPanel(el) {
@@ -1000,6 +1146,7 @@
     document.getElementById('panel-' + key).classList.add('active');
     document.getElementById('topbar-title').textContent = panelMeta[key].title;
     document.getElementById('topbar-meta').textContent  = panelMeta[key].meta;
+    if (key === 'members') loadMembers();
   }
 
   function switchPanelByKey(key) {
