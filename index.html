@@ -761,7 +761,6 @@
     <div class="nav-item" data-panel="assembly" data-tooltip="조립실적 통합관리" onclick="switchPanel(this)">
       <span class="nav-icon">&#128203;</span>
       <span class="nav-text">조립실적 통합관리</span>
-      <span class="nav-badge">준비중</span>
     </div>
 
     <div class="nav-section-label" style="margin-top:8px;">품질 / 자료</div>
@@ -840,16 +839,15 @@
             <div class="hc-bar" style="background:linear-gradient(90deg,#10b981,#059669)"></div>
           </div>
 
-          <div class="home-card wip-card">
+          <div class="home-card" onclick="switchPanelByKey('assembly')">
             <div class="hc-top">
               <div class="hc-icon" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9)">&#128203;</div>
-              <span class="hc-badge">준비중</span>
             </div>
             <div class="hc-body">
               <div class="hc-title">조립실적<br>통합관리</div>
-              <div class="hc-desc">조립 실적 데이터를 통합 관리합니다. 현재 개발 중입니다.</div>
-              <button class="hc-btn" style="background:#94a3b8; pointer-events:none">
-                개발 중 <span class="btn-arrow">&#8250;</span>
+              <div class="hc-desc">조립 실적 데이터를 통합 관리합니다.</div>
+              <button class="hc-btn" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9)">
+                바로가기 <span class="btn-arrow">&#8250;</span>
               </button>
             </div>
             <div class="hc-bar" style="background:linear-gradient(90deg,#8b5cf6,#6d28d9)"></div>
@@ -897,14 +895,9 @@
       <iframe src="https://production-vs-plan.vercel.app/" title="생산계획대비 실적현황" allowfullscreen></iframe>
     </div>
 
-    <!-- 3. 조립실적 통합관리 (WIP) -->
-    <div class="panel wip-panel" id="panel-assembly">
-      <div class="wip-box">
-        <div class="wip-icon">&#128295;</div>
-        <h2>조립실적 통합관리</h2>
-        <p>현재 개발 중인 메뉴입니다.<br>완성되는 대로 이곳에 연결될 예정입니다.</p>
-        <div class="progress-bar-wrap"><div class="progress-bar-fill"></div></div>
-      </div>
+    <!-- 3. 조립실적 통합관리 -->
+    <div class="panel iframe-panel" id="panel-assembly">
+      <iframe src="https://assembly-production-mgmt.vercel.app/" title="조립실적 통합관리" allowfullscreen></iframe>
     </div>
 
     <!-- 4. 품질관리 교육자료 -->
@@ -1250,7 +1243,7 @@
     home:       { title: '홈',                       meta: '조립팀 통합 대시보드' },
     material:   { title: '생산계획대비 자재현황',     meta: 'material-shortage.vercel.app' },
     production: { title: '생산계획대비 실적현황',     meta: 'production-vs-plan.vercel.app' },
-    assembly:   { title: '조립실적 통합관리',         meta: '개발 진행 중' },
+    assembly:   { title: '조립실적 통합관리',         meta: 'assembly-production-mgmt.vercel.app' },
     quality:    { title: '품질관리 교육자료',         meta: 'quality-reflection-meeting.vercel.app' },
     upload:     { title: '파일 업로드',               meta: '데이터 파일 관리' },
     members:    { title: '회원관리',                  meta: '관리자 전용' },
