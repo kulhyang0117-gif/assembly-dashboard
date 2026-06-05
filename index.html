@@ -577,6 +577,24 @@
     }
     .auth-success.show { display: block; }
 
+    /* ── 업데이트 이력 패널 ── */
+    .changelog-panel { background: #f8fafc; overflow-y: auto; padding: 28px; }
+    .changelog-panel h2 { font-size: 18px; font-weight: 700; color: #1e293b; margin-bottom: 6px; }
+    .changelog-panel .desc { font-size: 13px; color: #64748b; margin-bottom: 24px; }
+    .changelog-list { display: flex; flex-direction: column; gap: 16px; max-width: 760px; }
+    .changelog-item { background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; padding: 18px 20px; }
+    .changelog-item-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .changelog-badge {
+      font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 20px; letter-spacing: 0.3px;
+    }
+    .badge-feat  { background: #dbeafe; color: #1d4ed8; }
+    .badge-fix   { background: #dcfce7; color: #15803d; }
+    .badge-update{ background: #fef3c7; color: #b45309; }
+    .changelog-date { font-size: 12px; color: #94a3b8; margin-left: auto; }
+    .changelog-title { font-size: 14px; font-weight: 600; color: #1e293b; margin-bottom: 4px; }
+    .changelog-desc { font-size: 13px; color: #64748b; line-height: 1.6; }
+    .changelog-desc li { margin-left: 16px; list-style: disc; }
+
     /* ── 회원관리 패널 ── */
     .members-panel { background: #f8fafc; overflow-y: auto; padding: 28px; }
     .members-panel h2 { font-size: 18px; font-weight: 700; color: #1e293b; margin-bottom: 6px; }
@@ -781,6 +799,11 @@
       <span class="nav-icon">&#128101;</span>
       <span class="nav-text">회원관리</span>
     </div>
+
+    <div class="nav-item" data-panel="changelog" data-tooltip="업데이트 이력" onclick="switchPanel(this)">
+      <span class="nav-icon">&#128221;</span>
+      <span class="nav-text">업데이트 이력</span>
+    </div>
   </nav>
 
   <div class="sidebar-footer">&copy; 2026 조립팀 · Production Summary</div>
@@ -941,6 +964,61 @@
             <tr><td colspan="5" class="members-empty">데이터를 불러오는 중...</td></tr>
           </tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- 7. 업데이트 이력 -->
+    <div class="panel changelog-panel" id="panel-changelog">
+      <h2>업데이트 이력</h2>
+      <p class="desc">조립팀 통합 대시보드의 기능 추가 및 개선 내역입니다.</p>
+      <div class="changelog-list">
+
+        <div class="changelog-item">
+          <div class="changelog-item-header">
+            <span class="changelog-badge badge-feat">기능 추가</span>
+            <span class="changelog-date">2026-06-05</span>
+          </div>
+          <div class="changelog-title">조립실적 통합관리 페이지 연동</div>
+          <ul class="changelog-desc">
+            <li>사이드바 및 홈화면에 조립실적 통합관리 메뉴 연결</li>
+            <li>외부 앱(assembly-production-mgmt.vercel.app) iframe 임베드</li>
+          </ul>
+        </div>
+
+        <div class="changelog-item">
+          <div class="changelog-item-header">
+            <span class="changelog-badge badge-feat">기능 추가</span>
+            <span class="changelog-date">2026-06-04</span>
+          </div>
+          <div class="changelog-title">회원 삭제 기능 추가</div>
+          <ul class="changelog-desc">
+            <li>관리자 페이지에서 회원 계정 삭제 가능</li>
+          </ul>
+        </div>
+
+        <div class="changelog-item">
+          <div class="changelog-item-header">
+            <span class="changelog-badge badge-fix">버그 수정</span>
+            <span class="changelog-date">2026-06-04</span>
+          </div>
+          <div class="changelog-title">이미 가입된 이메일 처리 및 upsert 오류 개선</div>
+          <ul class="changelog-desc">
+            <li>중복 이메일 가입 시 안내 메시지 표시</li>
+            <li>profiles upsert에 display_name 컬럼 추가</li>
+          </ul>
+        </div>
+
+        <div class="changelog-item">
+          <div class="changelog-item-header">
+            <span class="changelog-badge badge-fix">버그 수정</span>
+            <span class="changelog-date">2026-06-03</span>
+          </div>
+          <div class="changelog-title">topbar-meta 요소 누락으로 인한 JS 에러 수정</div>
+          <ul class="changelog-desc">
+            <li>switchPanel 실행 시 topbar-meta 요소가 없을 경우 발생하던 오류 해결</li>
+          </ul>
+        </div>
+
       </div>
     </div>
 
@@ -1250,6 +1328,7 @@
     quality:    { title: '품질관리 교육자료',         meta: 'quality-reflection-meeting.vercel.app' },
     upload:     { title: '파일 업로드',               meta: '데이터 파일 관리' },
     members:    { title: '회원관리',                  meta: '관리자 전용' },
+    changelog:  { title: '업데이트 이력',             meta: '시스템 변경 내역' },
   };
 
   function switchPanel(el) {
